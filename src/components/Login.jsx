@@ -42,7 +42,7 @@ function Login() {
       }
       
       // If not using test credentials, try to authenticate with the server
-      const response = await fetch(`${API_URL}/login`, {
+      const response = await fetch(`${API_URL}/api/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

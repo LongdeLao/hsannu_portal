@@ -83,6 +83,8 @@ function ProfileView() {
       return;
     }
 
+    console.log('Uploading profile picture:', file.name, 'type:', file.type);
+
     // Reset states
     setUploadError('');
     setUploadSuccess(false);
@@ -93,13 +95,17 @@ function ProfileView() {
     formData.append('profile_picture', file);
 
     try {
-      const response = await fetch(`${API_URL}/api/profile/upload-picture/${userData.id}`, {
+      const uploadUrl = `${API_URL}/api/profile/upload-picture/${userData.id}`;
+      console.log('Profile picture upload endpoint:', uploadUrl);
+      
+      const response = await fetch(uploadUrl, {
         method: 'POST',
         body: formData,
       });
 
       if (response.ok) {
         const result = await response.json();
+        console.log('Profile picture upload response:', result);
         setUploadSuccess(true);
         
         // Update user data with new profile picture
@@ -110,6 +116,7 @@ function ProfileView() {
           };
           localStorage.setItem('user', JSON.stringify(updatedUserData));
           setUserData(updatedUserData);
+          console.log('Updated profile picture path:', result.profile_picture);
         }
         
         // Refresh profile info
@@ -117,6 +124,7 @@ function ProfileView() {
       } else {
         const errorData = await response.json();
         setUploadError(errorData.error || 'Failed to upload profile picture');
+        console.error('Profile picture upload failed:', errorData);
       }
     } catch (error) {
       setUploadError('Network error. Please try again later.');
@@ -286,9 +294,10 @@ function ProfileView() {
           >
             {userData.profile_picture ? (
               <img 
-                src={`${API_URL}${userData.profile_picture}`} 
+                src={`${API_URL}/api${userData.profile_picture}`} 
                 alt="Profile" 
                 className="w-full h-full object-cover"
+                onLoad={() => console.log('Profile picture URL loaded:', `${API_URL}${userData.profile_picture}`)}
               />
             ) : (
               <span className="text-gray-400">

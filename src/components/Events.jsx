@@ -42,7 +42,7 @@ function EventsView() {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch(`${API_URL}/events`);
+      const response = await fetch(`${API_URL}/api/events`);
       if (!response.ok) {
         console.error("Unexpected status code");
         return;

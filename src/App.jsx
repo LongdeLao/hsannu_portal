@@ -58,7 +58,7 @@ const Sidebar = ({ userRole, onCollapsedChange }) => {
   // Define navigation items based on user role
   const navItems = [
     {
-      title: 'Dashboard',
+      title: 'Dashboard ',
       icon: <LayoutDashboard size={20} />,
       path: `/${userRole}/dashboard`,
     },
@@ -140,15 +140,15 @@ const Sidebar = ({ userRole, onCollapsedChange }) => {
           >
             <div className="flex items-center justify-center w-16 h-full flex-shrink-0">
               {userData.profile_picture ? (
-                <img 
-                  src={`${API_URL}${userData.profile_picture}`} 
-                  alt="Profile" 
-                  className="h-10 w-10 rounded-full object-cover"
+                <img
+                  src={`${API_URL}/api${userData.profile_picture}`}
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full object-cover"
+                  onLoad={() => console.log('Sidebar profile picture URL:', `${API_URL}/api${userData.profile_picture}`)}
                 />
               ) : (
                 <div className="flex-shrink-0 rounded-full bg-black h-10 w-10 flex items-center justify-center text-white font-semibold">
                   {userData.name.charAt(0).toUpperCase()}
-
                 </div>
               )}
             </div>

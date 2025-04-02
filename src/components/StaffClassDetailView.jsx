@@ -118,7 +118,7 @@ const StaffClassDetailView = () => {
   const fetchClassDetails = async (id) => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/get_class_details/${id}`);
+      const response = await fetch(`${API_URL}/api/get_class_details/${id}`);
       
       if (!response.ok) {
         throw new Error(`Server returned ${response.status} ${response.statusText}`);
@@ -149,7 +149,7 @@ const StaffClassDetailView = () => {
     if (hasProfilePicture) {
       return (
         <Avatar 
-          src={`${API_URL}${profile.profile_picture}`}
+          src={`${API_URL}/api${profile.profile_picture}`}
           alt={`${student.name} ${student.last_name}`}
           sx={{ width: 36, height: 36 }}
         />

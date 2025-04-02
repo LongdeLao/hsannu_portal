@@ -7,19 +7,23 @@ import { API_URL } from '../config';
 const ImageViewer = ({ images, onImageClick }) => {
   return (
     <div className="grid grid-cols-3 gap-4">
-      {images.map((image, index) => (
-        <div 
-          key={index}
-          className="aspect-square overflow-hidden rounded-xl shadow-sm cursor-pointer hover:opacity-90 transition-opacity"
-          onClick={() => onImageClick(index)}
-        >
-          <img
-            src={image.url || `${API_URL}/${image.data}`}
-            alt={`Event image ${index + 1}`}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ))}
+      {images.map((image, index) => {
+        const imgSrc = image.url || `${API_URL}/api/${image.filePath}`;
+        console.log(`Thumbnail image ${index} src:`, imgSrc);
+        return (
+          <div 
+            key={index}
+            className="aspect-square overflow-hidden rounded-xl shadow-sm cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => onImageClick(index)}
+          >
+            <img
+              src={imgSrc}
+              alt={`Event image ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -37,6 +41,9 @@ const ImageOverlay = ({ images, activeIndex, onClose, onPrev, onNext }) => {
   };
 
   if (activeIndex === null) return null;
+  
+  const fullImgSrc = images[currentIndex].url || `${API_URL}/api/${images[currentIndex].filePath}`;
+  console.log('Full-size image src:', fullImgSrc);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex flex-col">
@@ -66,7 +73,7 @@ const ImageOverlay = ({ images, activeIndex, onClose, onPrev, onNext }) => {
           </button>
           
           <img
-            src={images[currentIndex].url || `${API_URL}/${images[currentIndex].data}`}
+            src={fullImgSrc}
             alt={`Full size event image ${currentIndex + 1}`}
             className="max-h-full max-w-full object-contain"
           />
@@ -102,13 +109,14 @@ function EventHeader({ onBack }) {
 }
 
 function EventDetailView() {
-  const { id } = useParams(); // Extract event ID from URL
+  const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeImageIndex, setActiveImageIndex] = useState(null);
+  const [images, setImages] = useState([]);
   
   // Extract user role from URL path
   const userRole = location.pathname.includes('/student/') ? 'student' : 'staff';
@@ -120,7 +128,7 @@ function EventDetailView() {
         setLoading(true);
         
         // First try the production API endpoint
-        const prodEndpoint = `${API_URL}/event/${id}`;
+        const prodEndpoint = `${API_URL}/api/event/${id}`;
         console.log("Attempting to fetch from:", prodEndpoint);
         
         try {
@@ -140,7 +148,20 @@ function EventDetailView() {
                 images: Array.isArray(data.event.images) ? data.event.images : []
               };
               setEvent(transformedEvent);
-              return; // Successfully fetched, exit the function
+
+              // Process images
+              if (transformedEvent.images && transformedEvent.images.length > 0) {
+                const processedImages = transformedEvent.images.map(image => {
+                  const imageUrl = `${API_URL}/api/${image.filePath}`;
+                  console.log('Event image URL constructed:', imageUrl);
+                  return {
+                    ...image,
+                    url: imageUrl
+                  };
+                });
+                setImages(processedImages);
+              }
+              return;
             }
           }
           
@@ -152,7 +173,7 @@ function EventDetailView() {
           console.error("Error with production endpoint:", prodError);
           
           // Try the local fallback
-          const localEndpoint = `${API_URL}/event/${id}`;
+          const localEndpoint = `${API_URL}/api/event/${id}`;
           console.log("Attempting fallback to:", localEndpoint);
           
           const fallbackResponse = await fetch(localEndpoint);
@@ -173,6 +194,19 @@ function EventDetailView() {
               images: Array.isArray(fallbackData.event.images) ? fallbackData.event.images : []
             };
             setEvent(transformedEvent);
+
+            // Process images
+            if (transformedEvent.images && transformedEvent.images.length > 0) {
+              const processedImages = transformedEvent.images.map(image => {
+                const imageUrl = `${API_URL}/api/${image.filePath}`;
+                console.log('Event image URL (fallback):', imageUrl);
+                return {
+                  ...image,
+                  url: imageUrl
+                };
+              });
+              setImages(processedImages);
+            }
           } else {
             throw new Error("Event data not found in response");
           }
@@ -271,18 +305,19 @@ function EventDetailView() {
           </div>
 
           {/* Images Section */}
-          {event.images && event.images.length > 0 ? (
+          {images && images.length > 0 ? (
             <div className="mb-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Attached Images</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {event.images.map((image, index) => (
+                {images.map((image, index) => (
                   <div 
                     key={index}
                     className="relative aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                     onClick={() => setActiveImageIndex(index)}
                   >
+                    {console.log(`Grid view image ${index} src:`, image.url || `${API_URL}/api/${image.filePath}`)}
                     <img 
-                      src={image.url || `${API_URL}/${image.data}`} 
+                      src={image.url || `${API_URL}/api/${image.filePath}`} 
                       alt={`Event image ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
@@ -309,11 +344,11 @@ function EventDetailView() {
       {/* Image Overlay */}
       {activeImageIndex !== null && (
         <ImageOverlay 
-          images={event.images}
+          images={images}
           activeIndex={activeImageIndex}
           onClose={handleCloseOverlay}
-          onPrev={() => setActiveImageIndex(prev => (prev > 0 ? prev - 1 : event.images.length - 1))}
-          onNext={() => setActiveImageIndex(prev => (prev < event.images.length - 1 ? prev + 1 : 0))}
+          onPrev={() => setActiveImageIndex(prev => (prev > 0 ? prev - 1 : images.length - 1))}
+          onNext={() => setActiveImageIndex(prev => (prev < images.length - 1 ? prev + 1 : 0))}
         />
       )}
     </div>

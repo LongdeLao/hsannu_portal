@@ -59,7 +59,7 @@ const StaffClasses = () => {
       }
       
       try {
-        const response = await fetch(`${API_URL}/get_subjects_by_teacher/${teacherId}`);
+        const response = await fetch(`${API_URL}/api/get_subjects_by_teacher/${teacherId}`);
         
         if (!response.ok) {
           throw new Error(`Server returned ${response.status} ${response.statusText}`);
@@ -184,7 +184,7 @@ const StaffClasses = () => {
     if (hasProfilePicture) {
       return (
         <Avatar 
-          src={`${API_URL}${profile.profile_picture}`}
+          src={`${API_URL}/api${profile.profile_picture}`}
           alt={`${student.name} ${student.last_name}`}
         />
       );

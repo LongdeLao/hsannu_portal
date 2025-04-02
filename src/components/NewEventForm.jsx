@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { format, addMinutes } from 'date-fns';
 import { useDropzone } from 'react-dropzone';
+import { API_URL } from '../config';
+import { v4 as uuidv4 } from 'uuid';
 
 // MUI Components
 import {
@@ -177,41 +179,47 @@ function NewEventForm() {
     setError('');
     
     try {
-      // Create form data for API submission
+      // Create FormData object
       const formData = new FormData();
+      
+      // Add event data to formData
+      formData.append('eventID', crypto.randomUUID());
+      formData.append('authorID', '1'); // TODO: Get from auth context
+      formData.append('authorName', 'John Doe'); // TODO: Get from auth context
       formData.append('title', data.title);
       formData.append('eventDescription', data.eventDescription);
       formData.append('address', data.address);
       formData.append('eventDate', data.eventDate.toISOString());
-      formData.append('isWholeDay', data.isWholeDay);
+      formData.append('isWholeDay', data.isWholeDay.toString());
       
+      // Add time fields if not a whole day event
       if (!data.isWholeDay) {
         formData.append('startTime', data.startTime.toISOString());
         formData.append('endTime', data.endTime.toISOString());
       }
+
+      // Add images to formData
+      images.forEach((image) => {
+        formData.append('images', image);
+      });
+
+      // Log the form data (for debugging)
+      console.log('Form data being sent:', Object.fromEntries(formData));
       
-      // Add images
-      images.forEach((image, index) => {
-        formData.append(`images[${index}]`, image);
+      const response = await fetch(`${API_URL}/api/post_event`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
       });
       
-      // Mocked API call - replace with your actual API endpoint
-      // const response = await fetch('http://localhost:2000/post_event', {
-      //   method: 'POST',
-      //   body: formData,
-      // });
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Server error response:', errorData);
+        throw new Error(errorData.error || 'Failed to create event');
+      }
       
-      // if (!response.ok) {
-      //   throw new Error('Failed to create event');
-      // }
-      
-      // const responseData = await response.json();
-      
-      // Simulate successful response
-      console.log('Event created successfully:', {
-        ...data,
-        imageCount: images.length
-      });
+      const responseData = await response.json();
+      console.log('Event created successfully:', responseData);
       
       // Redirect back to events page
       navigate(`/${userRole}/events`);

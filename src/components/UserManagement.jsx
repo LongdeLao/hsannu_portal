@@ -160,7 +160,7 @@ const UserManagement = () => {
     if (hasProfilePicture) {
       return (
         <Avatar 
-          src={`${API_URL}${profile.profile_picture}`}
+          src={`${API_URL}/api${profile.profile_picture}`}
           alt={user.name}
           sx={{ width: 32, height: 32, mr: 2 }}
         />

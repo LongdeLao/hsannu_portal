@@ -57,7 +57,7 @@ const StudentClasses = () => {
       }
       
       try {
-        const response = await fetch(`${API_URL}/get_subjects/${studentId}`);
+        const response = await fetch(`${API_URL}/api/get_subjects/${studentId}`);
         
         if (!response.ok) {
           throw new Error(`Server returned ${response.status} ${response.statusText}`);
@@ -186,7 +186,7 @@ const StudentClasses = () => {
       // Use the profile picture
       return (
         <Avatar 
-          src={`${API_URL}${profile.profile_picture}`}
+          src={`${API_URL}/api${profile.profile_picture}`}
           alt={teacherName}
           sx={{ 
             width: 36,
