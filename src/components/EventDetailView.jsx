@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
+import { Box } from '@mui/material';
 import { API_URL } from '../config';
 
 // Image Viewer Component
@@ -236,34 +237,54 @@ function EventDetailView() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-start p-6">
-        <div className="text-left">
-          <div className="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-black mb-4"></div>
-          <p className="text-gray-600">Loading event details...</p>
-        </div>
-      </div>
+      <Box 
+        className="flex flex-col min-h-screen ml-28 mr-28"
+        sx={{
+          '& .MuiBox-root': {
+            maxWidth: '100%'
+          }
+        }}
+      >
+        <Box className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 w-full">
+          <Box className="bg-white/30 backdrop-blur-sm rounded-xl shadow-sm overflow-hidden p-6">
+            <div className="flex items-center">
+              <div className="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-black mr-4"></div>
+              <p className="text-gray-600">Loading event details...</p>
+            </div>
+          </Box>
+        </Box>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen p-6">
-        <div className="max-w-md">
-          <div className="text-red-500 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <h2 className="text-xl font-bold">Error Loading Event</h2>
-          </div>
-          <p className="text-gray-700 mb-4">{error}</p>
-          <button 
-            onClick={() => navigate(`/${userRole}/events`)}
-            className="bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors"
-          >
-            Back to Events
-          </button>
-        </div>
-      </div>
+      <Box 
+        className="flex flex-col min-h-screen ml-28 mr-28"
+        sx={{
+          '& .MuiBox-root': {
+            maxWidth: '100%'
+          }
+        }}
+      >
+        <Box className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 w-full">
+          <Box className="bg-white/30 backdrop-blur-sm rounded-xl shadow-sm overflow-hidden p-6">
+            <div className="text-red-500 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <h2 className="text-xl font-bold">Error Loading Event</h2>
+            </div>
+            <p className="text-gray-700 mb-4">{error}</p>
+            <button 
+              onClick={() => navigate(`/${userRole}/events`)}
+              className="bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              Back to Events
+            </button>
+          </Box>
+        </Box>
+      </Box>
     );
   }
 
@@ -279,9 +300,16 @@ function EventDetailView() {
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-full">
-        <div className="p-6">
+    <Box 
+      className="flex flex-col min-h-screen ml-28 mr-28"
+      sx={{
+        '& .MuiBox-root': {
+          maxWidth: '100%'
+        }
+      }}
+    >
+      <Box className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 w-full">
+        <Box className="bg-white/30 backdrop-blur-sm rounded-xl shadow-sm overflow-hidden p-6">
           <EventHeader onBack={handleBack} />
           
           {/* Event Title */}
@@ -338,8 +366,8 @@ function EventDetailView() {
               <p className="text-gray-700">{event.address}</p>
             </div>
           )}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Image Overlay */}
       {activeImageIndex !== null && (
@@ -351,7 +379,7 @@ function EventDetailView() {
           onNext={() => setActiveImageIndex(prev => (prev < images.length - 1 ? prev + 1 : 0))}
         />
       )}
-    </div>
+    </Box>
   );
 }
 

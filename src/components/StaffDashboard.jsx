@@ -1,12 +1,24 @@
 // StaffDashboard.jsx
 import React from 'react';
+import { Box } from '@mui/material';
 
 function StaffDashboard() {
   return (
-    <div>
-      <h1>Staff Dashboard</h1>
-      <p>Welcome to your staff dashboard!</p>
-    </div>
+    <Box 
+      className="flex flex-col min-h-screen mx-10"
+      sx={{
+        '& .MuiBox-root': {
+          maxWidth: '100%'
+        }
+      }}
+    >
+      <Box className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 w-full">
+        <Box className="bg-white p-6">
+          <h1 className="text-2xl font-bold mb-4">Staff Dashboard</h1>
+          <p>Welcome to your staff dashboard!</p>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 

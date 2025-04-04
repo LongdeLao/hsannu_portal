@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserCircle, Mail, Phone, School, BadgeCheck, Upload, Camera, Pencil, Check, X, Key, Eye, EyeOff, Activity, PauseCircle, AlertCircle, Clock, Briefcase, GraduationCap, Award } from 'lucide-react';
-import { Box, IconButton } from '@mui/material';
+import { Box, IconButton, CircularProgress } from '@mui/material';
 import { ArrowLeft } from 'lucide-react';
 import { API_URL } from '../config';
 
@@ -277,206 +277,235 @@ function ProfileView() {
 
   if (!userData) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
-      </div>
+      <Box 
+        className="flex flex-col min-h-screen ml-28 mr-28"
+        sx={{
+          '& .MuiBox-root': {
+            maxWidth: '100%'
+          }
+        }}
+      >
+        <Box className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 w-full">
+          <Box className="bg-white/30 backdrop-blur-sm rounded-xl shadow-sm overflow-hidden p-6 flex items-center justify-center">
+            <CircularProgress />
+          </Box>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-5xl">
-        {/* Header with profile pic and name */}
-        <div className="flex items-center space-x-5 mb-10">
-          <div 
-            className="relative rounded-full h-20 w-20 flex items-center justify-center text-white font-bold text-2xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity bg-gray-100"
-            onClick={handleProfilePictureClick}
+    <Box 
+      className="flex flex-col min-h-screen ml-28 mr-28"
+      sx={{
+        '& .MuiBox-root': {
+          maxWidth: '100%'
+        }
+      }}
+    >
+      <Box className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 w-full">
+        <Box className="bg-white/30 backdrop-blur-sm rounded-xl shadow-sm overflow-hidden p-6">
+          {/* Back Button */}
+          <button
+            onClick={handleBack}
+            className="flex items-center text-gray-600 hover:text-black mb-6 transition-colors"
           >
-            {userData.profile_picture ? (
-              <img 
-                src={`${API_URL}/api${userData.profile_picture}`} 
-                alt="Profile" 
-                className="w-full h-full object-cover"
-                onLoad={() => console.log('Profile picture URL loaded:', `${API_URL}${userData.profile_picture}`)}
+            <ArrowLeft size={18} className="mr-1" />
+            <span>Back</span>
+          </button>
+          
+          {/* Header with profile pic and name */}
+          <div className="flex items-center space-x-5 mb-10">
+            <div 
+              className="relative rounded-full h-20 w-20 flex items-center justify-center text-white font-bold text-2xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity bg-gray-100"
+              onClick={handleProfilePictureClick}
+            >
+              {userData.profile_picture ? (
+                <img 
+                  src={`${API_URL}/api${userData.profile_picture}`} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover"
+                  onLoad={() => console.log('Profile picture URL loaded:', `${API_URL}${userData.profile_picture}`)}
+                />
+              ) : (
+                <span className="text-gray-400">
+                  {userData.name?.charAt(0) || userData.username?.charAt(0) || 'U'}
+                </span>
+              )}
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity">
+                <Camera className="text-white" size={20} />
+              </div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/jpeg,image/png,image/jpg"
+                className="hidden"
               />
-            ) : (
-              <span className="text-gray-400">
-                {userData.name?.charAt(0) || userData.username?.charAt(0) || 'U'}
-              </span>
-            )}
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity">
-              <Camera className="text-white" size={20} />
-            </div>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept="image/jpeg,image/png,image/jpg"
-              className="hidden"
-            />
-          </div>
-          
-          <div>
-            <h1 className="text-3xl font-bold mb-1">{userData.name || userData.username}</h1>
-            <div className="flex items-center">
-              <span className="text-gray-500 capitalize mr-3">{userData.role}</span>
-              {isUploading && <span className="text-xs text-gray-500">Uploading photo...</span>}
-              {uploadSuccess && <span className="text-xs text-green-500">Upload successful!</span>}
-              {uploadError && <span className="text-xs text-red-500">{uploadError}</span>}
-            </div>
-          </div>
-        </div>
-        
-        {/* Main content */}
-        <div className="mb-12">
-          <h2 className="text-xl font-semibold mb-6 pb-2 border-b border-gray-100">Profile Information</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Username */}
-            <div className="flex space-x-4">
-              <div className="flex-shrink-0 p-3 bg-gray-50 rounded-full h-12 w-12 flex items-center justify-center">
-                <UserCircle className="text-gray-400" size={22} />
-              </div>
-              <div>
-                <div className="text-sm text-gray-500 mb-1">Username</div>
-                <div className="font-medium">{userData.username}</div>
-              </div>
             </div>
             
-            {/* Status Field */}
-            <div className="flex space-x-4">
-              <div className="flex-shrink-0 p-3 bg-gray-50 rounded-full h-12 w-12 flex items-center justify-center">
-                {userData.status === 'employed' && <Briefcase className="text-gray-400" size={22} />}
-                {userData.status === 'enrolled' && <GraduationCap className="text-gray-400" size={22} />}
-                {userData.status === 'alumni' && <Award className="text-gray-400" size={22} />}
+            <div>
+              <h1 className="text-3xl font-bold mb-1">{userData.name || userData.username}</h1>
+              <div className="flex items-center">
+                <span className="text-gray-500 capitalize mr-3">{userData.role}</span>
+                {isUploading && <span className="text-xs text-gray-500">Uploading photo...</span>}
+                {uploadSuccess && <span className="text-xs text-green-500">Upload successful!</span>}
+                {uploadError && <span className="text-xs text-red-500">{uploadError}</span>}
               </div>
-              <div>
-                <div className="text-sm text-gray-500 mb-1">Status</div>
-                <div className="font-medium capitalize">
-                  {userData.status || 'Unknown'}
+            </div>
+          </div>
+          
+          {/* Main content */}
+          <div className="mb-12">
+            <h2 className="text-xl font-semibold mb-6 pb-2 border-b border-gray-100">Profile Information</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Username */}
+              <div className="flex space-x-4">
+                <div className="flex-shrink-0 p-3 bg-gray-50 rounded-full h-12 w-12 flex items-center justify-center">
+                  <UserCircle className="text-gray-400" size={22} />
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">Username</div>
+                  <div className="font-medium">{userData.username}</div>
                 </div>
               </div>
-            </div>
-            
-            {/* User ID */}
-            <div className="flex space-x-4">
-              <div className="flex-shrink-0 p-3 bg-gray-50 rounded-full h-12 w-12 flex items-center justify-center">
-                <BadgeCheck className="text-gray-400" size={22} />
+              
+              {/* Status Field */}
+              <div className="flex space-x-4">
+                <div className="flex-shrink-0 p-3 bg-gray-50 rounded-full h-12 w-12 flex items-center justify-center">
+                  {userData.status === 'employed' && <Briefcase className="text-gray-400" size={22} />}
+                  {userData.status === 'enrolled' && <GraduationCap className="text-gray-400" size={22} />}
+                  {userData.status === 'alumni' && <Award className="text-gray-400" size={22} />}
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">Status</div>
+                  <div className="font-medium capitalize">
+                    {userData.status || 'Unknown'}
+                  </div>
+                </div>
               </div>
-              <div>
-                <div className="text-sm text-gray-500 mb-1">User ID</div>
-                <div className="font-medium">{userData.id}</div>
+              
+              {/* User ID */}
+              <div className="flex space-x-4">
+                <div className="flex-shrink-0 p-3 bg-gray-50 rounded-full h-12 w-12 flex items-center justify-center">
+                  <BadgeCheck className="text-gray-400" size={22} />
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">User ID</div>
+                  <div className="font-medium">{userData.id}</div>
+                </div>
               </div>
-            </div>
-            
-            {/* Email */}
-            <div className="flex space-x-4">
-              <div className="flex-shrink-0 p-3 bg-gray-50 rounded-full h-12 w-12 flex items-center justify-center">
-                <Mail className="text-gray-400" size={22} />
-              </div>
-              <div className="flex-1">
-                <div className="text-sm text-gray-500 mb-1">Email</div>
-                {isEditingEmail ? (
-                  <div className="relative">
-                    <div className="flex items-center">
-                      <div className="relative flex-1">
-                        <input
-                          type="email"
-                          value={newEmail}
-                          onChange={(e) => setNewEmail(e.target.value)}
-                          onFocus={() => setIsEmailInputFocused(true)}
-                          onBlur={() => setIsEmailInputFocused(false)}
-                          className="w-full border-b border-gray-300 focus:border-black outline-none py-1 bg-transparent pr-16"
-                          placeholder="Enter your email"
-                        />
-                        <div className="absolute right-0 top-0 flex">
-                          <button 
-                            onClick={handleSaveEmail}
-                            disabled={emailUpdateStatus.loading}
-                            className="p-1 text-black hover:text-gray-600 transition-colors"
-                            title="Save"
-                          >
-                            {emailUpdateStatus.loading ? (
-                              <div className="animate-spin h-4 w-4 border-2 border-black rounded-full border-t-transparent"></div>
-                            ) : (
-                              <Check size={16} />
-                            )}
-                          </button>
-                          <button 
-                            onClick={handleCancelEditEmail}
-                            className="p-1 text-black hover:text-gray-600 transition-colors"
-                            title="Cancel"
-                          >
-                            <X size={16} />
-                          </button>
+              
+              {/* Email */}
+              <div className="flex space-x-4">
+                <div className="flex-shrink-0 p-3 bg-gray-50 rounded-full h-12 w-12 flex items-center justify-center">
+                  <Mail className="text-gray-400" size={22} />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm text-gray-500 mb-1">Email</div>
+                  {isEditingEmail ? (
+                    <div className="relative">
+                      <div className="flex items-center">
+                        <div className="relative flex-1">
+                          <input
+                            type="email"
+                            value={newEmail}
+                            onChange={(e) => setNewEmail(e.target.value)}
+                            onFocus={() => setIsEmailInputFocused(true)}
+                            onBlur={() => setIsEmailInputFocused(false)}
+                            className="w-full border-b border-gray-300 focus:border-black outline-none py-1 bg-transparent pr-16"
+                            placeholder="Enter your email"
+                          />
+                          <div className="absolute right-0 top-0 flex">
+                            <button 
+                              onClick={handleSaveEmail}
+                              disabled={emailUpdateStatus.loading}
+                              className="p-1 text-black hover:text-gray-600 transition-colors"
+                              title="Save"
+                            >
+                              {emailUpdateStatus.loading ? (
+                                <div className="animate-spin h-4 w-4 border-2 border-black rounded-full border-t-transparent"></div>
+                              ) : (
+                                <Check size={16} />
+                              )}
+                            </button>
+                            <button 
+                              onClick={handleCancelEditEmail}
+                              className="p-1 text-black hover:text-gray-600 transition-colors"
+                              title="Cancel"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
+                  ) : (
+                    <div className="flex items-center">
+                      <span className="font-medium">{userData.email || 'not-registered'}</span>
+                      <button 
+                        onClick={handleEditEmail}
+                        className="ml-2 p-1 text-gray-400 hover:text-black transition-colors"
+                        title="Edit email"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Password */}
+              <div className="flex space-x-4">
+                <div className="flex-shrink-0 p-3 bg-gray-50 rounded-full h-12 w-12 flex items-center justify-center">
+                  <Key className="text-gray-400" size={22} />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm text-gray-500 mb-1">Password</div>
                   <div className="flex items-center">
-                    <span className="font-medium">{userData.email || 'not-registered'}</span>
+                    <span className="font-medium">••••••••</span>
                     <button 
-                      onClick={handleEditEmail}
+                      onClick={handleChangePassword}
                       className="ml-2 p-1 text-gray-400 hover:text-black transition-colors"
-                      title="Edit email"
+                      title="Change password"
                     >
                       <Pencil size={16} />
                     </button>
                   </div>
-                )}
-              </div>
-            </div>
-            
-            {/* Password */}
-            <div className="flex space-x-4">
-              <div className="flex-shrink-0 p-3 bg-gray-50 rounded-full h-12 w-12 flex items-center justify-center">
-                <Key className="text-gray-400" size={22} />
-              </div>
-              <div className="flex-1">
-                <div className="text-sm text-gray-500 mb-1">Password</div>
-                <div className="flex items-center">
-                  <span className="font-medium">••••••••</span>
-                  <button 
-                    onClick={handleChangePassword}
-                    className="ml-2 p-1 text-gray-400 hover:text-black transition-colors"
-                    title="Change password"
-                  >
-                    <Pencil size={16} />
-                  </button>
                 </div>
               </div>
             </div>
-          </div>
-          
-          {/* Roles section */}
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-6 pb-2 border-b border-gray-100">Roles & Permissions</h2>
             
-            <div className="flex space-x-4">
-              <div className="flex-shrink-0 p-3 bg-gray-50 rounded-full h-12 w-12 flex items-center justify-center">
-                <School className="text-gray-400" size={22} />
-              </div>
-              <div>
-                <div className="text-sm text-gray-500 mb-2">Your Roles</div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1.5 bg-black text-white text-sm rounded-full capitalize">
-                    {userData.role}
-                  </span>
-                  {userData.additional_roles && userData.additional_roles.map((role, index) => (
-                    <span 
-                      key={index} 
-                      className="px-3 py-1.5 bg-gray-100 text-gray-800 text-sm rounded-full capitalize"
-                    >
-                      {role}
+            {/* Roles section */}
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold mb-6 pb-2 border-b border-gray-100">Roles & Permissions</h2>
+              
+              <div className="flex space-x-4">
+                <div className="flex-shrink-0 p-3 bg-gray-50 rounded-full h-12 w-12 flex items-center justify-center">
+                  <School className="text-gray-400" size={22} />
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 mb-2">Your Roles</div>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1.5 bg-black text-white text-sm rounded-full capitalize">
+                      {userData.role}
                     </span>
-                  ))}
+                    {userData.additional_roles && userData.additional_roles.map((role, index) => (
+                      <span 
+                        key={index} 
+                        className="px-3 py-1.5 bg-gray-100 text-gray-800 text-sm rounded-full capitalize"
+                      >
+                        {role}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Change Password Modal */}
       {showPasswordModal && (
@@ -569,7 +598,7 @@ function ProfileView() {
           </div>
         </div>
       )}
-    </div>
+    </Box>
   );
 }
 
