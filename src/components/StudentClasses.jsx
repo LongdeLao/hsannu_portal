@@ -214,368 +214,397 @@ const StudentClasses = () => {
 
   return (
     <Box 
-      className="flex flex-col min-h-screen ml-28 mr-28"
       sx={{
-        '& .MuiBox-root': {
-          maxWidth: '100%'
-        }
+        padding: '24px 32px',
+        maxWidth: '1400px',
+        margin: '0 auto'
       }}
     >
-      <Box className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 w-full">
-        <Box className="bg-white/30 backdrop-blur-sm rounded-xl shadow-sm overflow-hidden p-6">
-          <Typography variant="h4" component="h1" fontWeight="bold" fontSize="1.5rem" mb={4}>
-            My Classes
-          </Typography>
-          
-          {error && (
-            <Box 
-              sx={{
-                p: 2,
-                mb: 3,
-                borderRadius: 2,
-                backgroundColor: 'rgba(244, 67, 54, 0.1)',
-                color: '#d32f2f',
-                border: '1px solid rgba(244, 67, 54, 0.2)',
-              }}
-            >
-              <Typography>{error}</Typography>
-            </Box>
-          )}
-          
-          {loading ? (
-            <Box display="flex" justifyContent="center" py={8}>
-              <CircularProgress />
-            </Box>
-          ) : classes.length === 0 ? (
-            <Box 
-              sx={{
-                p: 4,
-                textAlign: 'center',
-                backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                borderRadius: 2,
-              }}
-            >
-              <Typography variant="body1" color="text.secondary">
-                You aren't enrolled in any classes yet.
-              </Typography>
-            </Box>
-          ) : (
-            <>
-              {Object.keys(groupedClasses)
-                .sort(sortTeachingGroups)
-                .map((teachingGroup) => (
-                  <Box key={teachingGroup} mb={4}>
-                    <Box 
-                      sx={{ 
-                        display: 'flex',
-                        alignItems: 'center',
-                        mb: 2
-                      }}
-                    >
-                      <Box 
-                        sx={{
-                          width: 6,
-                          height: 24,
-                          borderRadius: 1,
-                          backgroundColor: getGroupColor(teachingGroup),
-                          mr: 2
-                        }}
-                      />
-                      <Typography variant="h5" fontWeight="600">
-                        {teachingGroup}
-                      </Typography>
-                    </Box>
-
-                    {/* Higher Level Subjects */}
-                    {groupedClasses[teachingGroup].HL.length > 0 && (
-                      <Box mb={4}>
-                        <Typography variant="h6" fontWeight="600" mb={2} color="text.secondary">
-                          Higher Level
-                        </Typography>
-                        <Grid container spacing={3}>
-                          {groupedClasses[teachingGroup].HL.map((cls) => (
-                            <Grid item xs={12} md={6} lg={4} key={cls.code}>
-                              <Card 
-                                elevation={0}
-                                sx={{
-                                  borderRadius: 2,
-                                  border: '1px solid',
-                                  borderColor: 'rgba(0, 0, 0, 0.08)',
-                                  transition: 'all 0.2s ease-in-out',
-                                  '&:hover': {
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                                    borderColor: getGroupColor(teachingGroup)
-                                  }
-                                }}
-                              >
-                                <CardContent sx={{ p: 3 }}>
-                                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                                    <Chip 
-                                      label={cls.code} 
-                                      size="small" 
-                                      sx={{ 
-                                        borderRadius: 1,
-                                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                                        fontWeight: 500
-                                      }} 
-                                    />
-                                    <Chip 
-                                      label={cls.teaching_group} 
-                                      size="small"
-                                      sx={{ 
-                                        borderRadius: 1,
-                                        bgcolor: `${getGroupColor(teachingGroup)}20`,
-                                        color: getGroupColor(teachingGroup),
-                                        fontWeight: 500
-                                      }} 
-                                    />
-                                  </Box>
-                                  
-                                  <Typography variant="h6" fontWeight="600" mb={2}>
-                                    {cls.subject}
-                                  </Typography>
-                                  
-                                  <Divider sx={{ my: 2 }} />
-                                  
-                                  <Box 
-                                    sx={{
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      mb: 2
-                                    }}
-                                  >
-                                    {getTeacherAvatar(cls.teacher_id, cls.teacher_name, cls.initials)}
-                                    <Box>
-                                      <Typography variant="subtitle2" fontWeight="600">
-                                        {cls.teacher_name}
-                                      </Typography>
-                                      <Typography variant="caption" color="text.secondary">
-                                        Teacher
-                                      </Typography>
-                                    </Box>
-                                  </Box>
-                                  
-                                  <Button
-                                    fullWidth
-                                    variant="outlined"
-                                    sx={{
-                                      mt: 1,
-                                      borderRadius: 1,
-                                      textTransform: 'none',
-                                      borderColor: 'rgba(0, 0, 0, 0.12)',
-                                      color: 'text.primary',
-                                      '&:hover': {
-                                        borderColor: getGroupColor(teachingGroup),
-                                        color: getGroupColor(teachingGroup),
-                                        bgcolor: 'transparent'
-                                      }
-                                    }}
-                                  >
-                                    View Class Details
-                                  </Button>
-                                </CardContent>
-                              </Card>
-                            </Grid>
-                          ))}
-                        </Grid>
-                      </Box>
-                    )}
-
-                    {/* Standard Level Subjects */}
-                    {groupedClasses[teachingGroup].SL.length > 0 && (
-                      <Box mb={4}>
-                        <Typography variant="h6" fontWeight="600" mb={2} color="text.secondary">
-                          Standard Level
-                        </Typography>
-                        <Grid container spacing={3}>
-                          {groupedClasses[teachingGroup].SL.map((cls) => (
-                            <Grid item xs={12} md={6} lg={4} key={cls.code}>
-                              <Card 
-                                elevation={0}
-                                sx={{
-                                  borderRadius: 2,
-                                  border: '1px solid',
-                                  borderColor: 'rgba(0, 0, 0, 0.08)',
-                                  transition: 'all 0.2s ease-in-out',
-                                  '&:hover': {
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                                    borderColor: getGroupColor(teachingGroup)
-                                  }
-                                }}
-                              >
-                                <CardContent sx={{ p: 3 }}>
-                                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                                    <Chip 
-                                      label={cls.code} 
-                                      size="small" 
-                                      sx={{ 
-                                        borderRadius: 1,
-                                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                                        fontWeight: 500
-                                      }} 
-                                    />
-                                    <Chip 
-                                      label={cls.teaching_group} 
-                                      size="small"
-                                      sx={{ 
-                                        borderRadius: 1,
-                                        bgcolor: `${getGroupColor(teachingGroup)}20`,
-                                        color: getGroupColor(teachingGroup),
-                                        fontWeight: 500
-                                      }} 
-                                    />
-                                  </Box>
-                                  
-                                  <Typography variant="h6" fontWeight="600" mb={2}>
-                                    {cls.subject}
-                                  </Typography>
-                                  
-                                  <Divider sx={{ my: 2 }} />
-                                  
-                                  <Box 
-                                    sx={{
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      mb: 2
-                                    }}
-                                  >
-                                    {getTeacherAvatar(cls.teacher_id, cls.teacher_name, cls.initials)}
-                                    <Box>
-                                      <Typography variant="subtitle2" fontWeight="600">
-                                        {cls.teacher_name}
-                                      </Typography>
-                                      <Typography variant="caption" color="text.secondary">
-                                        Teacher
-                                      </Typography>
-                                    </Box>
-                                  </Box>
-                                  
-                                  <Button
-                                    fullWidth
-                                    variant="outlined"
-                                    sx={{
-                                      mt: 1,
-                                      borderRadius: 1,
-                                      textTransform: 'none',
-                                      borderColor: 'rgba(0, 0, 0, 0.12)',
-                                      color: 'text.primary',
-                                      '&:hover': {
-                                        borderColor: getGroupColor(teachingGroup),
-                                        color: getGroupColor(teachingGroup),
-                                        bgcolor: 'transparent'
-                                      }
-                                    }}
-                                  >
-                                    View Class Details
-                                  </Button>
-                                </CardContent>
-                              </Card>
-                            </Grid>
-                          ))}
-                        </Grid>
-                      </Box>
-                    )}
-
-                    {/* Other Subjects */}
-                    {groupedClasses[teachingGroup].Subjects.length > 0 && (
-                      <Box mb={4}>
-                        <Typography variant="h6" fontWeight="600" mb={2} color="text.secondary">
-                          Subjects
-                        </Typography>
-                        <Grid container spacing={3}>
-                          {groupedClasses[teachingGroup].Subjects.map((cls) => (
-                            <Grid item xs={12} md={6} lg={4} key={cls.code}>
-                              <Card 
-                                elevation={0}
-                                sx={{
-                                  borderRadius: 2,
-                                  border: '1px solid',
-                                  borderColor: 'rgba(0, 0, 0, 0.08)',
-                                  transition: 'all 0.2s ease-in-out',
-                                  '&:hover': {
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                                    borderColor: getGroupColor(teachingGroup)
-                                  }
-                                }}
-                              >
-                                <CardContent sx={{ p: 3 }}>
-                                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                                    <Chip 
-                                      label={cls.code} 
-                                      size="small" 
-                                      sx={{ 
-                                        borderRadius: 1,
-                                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                                        fontWeight: 500
-                                      }} 
-                                    />
-                                    <Chip 
-                                      label={cls.teaching_group} 
-                                      size="small"
-                                      sx={{ 
-                                        borderRadius: 1,
-                                        bgcolor: `${getGroupColor(teachingGroup)}20`,
-                                        color: getGroupColor(teachingGroup),
-                                        fontWeight: 500
-                                      }} 
-                                    />
-                                  </Box>
-                                  
-                                  <Typography variant="h6" fontWeight="600" mb={2}>
-                                    {cls.subject}
-                                  </Typography>
-                                  
-                                  <Divider sx={{ my: 2 }} />
-                                  
-                                  <Box 
-                                    sx={{
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      mb: 2
-                                    }}
-                                  >
-                                    {getTeacherAvatar(cls.teacher_id, cls.teacher_name, cls.initials)}
-                                    <Box>
-                                      <Typography variant="subtitle2" fontWeight="600">
-                                        {cls.teacher_name}
-                                      </Typography>
-                                      <Typography variant="caption" color="text.secondary">
-                                        Teacher
-                                      </Typography>
-                                    </Box>
-                                  </Box>
-                                  
-                                  <Button
-                                    fullWidth
-                                    variant="outlined"
-                                    sx={{
-                                      mt: 1,
-                                      borderRadius: 1,
-                                      textTransform: 'none',
-                                      borderColor: 'rgba(0, 0, 0, 0.12)',
-                                      color: 'text.primary',
-                                      '&:hover': {
-                                        borderColor: getGroupColor(teachingGroup),
-                                        color: getGroupColor(teachingGroup),
-                                        bgcolor: 'transparent'
-                                      }
-                                    }}
-                                  >
-                                    View Class Details
-                                  </Button>
-                                </CardContent>
-                              </Card>
-                            </Grid>
-                          ))}
-                        </Grid>
-                      </Box>
-                    )}
-                  </Box>
-                ))}
-            </>
-          )}
+      <Typography variant="h4" component="h1" fontWeight="bold" fontSize="1.5rem" mb={4}>
+        My Classes
+      </Typography>
+      
+      {error && (
+        <Box 
+          sx={{
+            p: 2,
+            mb: 3,
+            borderRadius: 2,
+            backgroundColor: 'rgba(244, 67, 54, 0.1)',
+            color: '#d32f2f',
+            border: '1px solid rgba(244, 67, 54, 0.2)',
+          }}
+        >
+          <Typography>{error}</Typography>
         </Box>
-      </Box>
+      )}
+      
+      {loading ? (
+        <Box display="flex" justifyContent="center" py={8}>
+          <CircularProgress />
+        </Box>
+      ) : classes.length === 0 ? (
+        <Box 
+          sx={{
+            p: 4,
+            textAlign: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.02)',
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="body1" color="text.secondary">
+            You aren't enrolled in any classes yet.
+          </Typography>
+        </Box>
+      ) : (
+        <>
+          {Object.keys(groupedClasses)
+            .sort(sortTeachingGroups)
+            .map((teachingGroup) => (
+              <Box key={teachingGroup} mb={6}>
+                <Box 
+                  sx={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    mb: 3
+                  }}
+                >
+                 
+                </Box>
+
+                {/* Higher Level Subjects */}
+                {groupedClasses[teachingGroup].HL.length > 0 && (
+                  <Box mb={5}>
+                    <Typography variant="h6" fontWeight="600" mb={2} color="text.secondary">
+                      Higher Level
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, width: '100%' }}>
+                      {groupedClasses[teachingGroup].HL.map((cls) => (
+                        <Box 
+                          key={cls.code}
+                          sx={{ 
+                            flex: '1 1 calc(33.333% - 16px)',
+                            minWidth: 'calc(33.333% - 16px)', 
+                            maxWidth: 'calc(33.333% - 16px)'
+                          }}
+                        >
+                          <Card 
+                            elevation={0}
+                            sx={{
+                              height: '100%',
+                              width: '100%',
+                              borderRadius: 2,
+                              border: '1px solid',
+                              borderColor: 'rgba(0, 0, 0, 0.08)',
+                              transition: 'all 0.2s ease-in-out',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              '&:hover': {
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                                borderColor: getGroupColor(teachingGroup)
+                              }
+                            }}
+                          >
+                              <CardContent sx={{ 
+                              p: 4, 
+                              flexGrow: 1, 
+                              display: 'flex', 
+                              flexDirection: 'column', 
+                              justifyContent: 'space-between' 
+                            }}>
+                              <Box>
+                                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                                  <Chip 
+                                    label={cls.code} 
+                                    size="small" 
+                                    sx={{ 
+                                      borderRadius: 1,
+                                      backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                      fontWeight: 500
+                                    }} 
+                                  />
+                                  <Chip 
+                                    label={cls.teaching_group} 
+                                    size="small"
+                                    sx={{ 
+                                      borderRadius: 1,
+                                      bgcolor: `${getGroupColor(teachingGroup)}20`,
+                                      color: getGroupColor(teachingGroup),
+                                      fontWeight: 500
+                                    }} 
+                                  />
+                                </Box>
+                                
+                                <Typography variant="h6" fontWeight="600" mb={2}>
+                                  {cls.subject}
+                                </Typography>
+                                
+                                <Divider sx={{ my: 2 }} />
+                                
+                                <Box 
+                                  sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    mb: 2
+                                  }}
+                                >
+                                  {getTeacherAvatar(cls.teacher_id, cls.teacher_name, cls.initials)}
+                                  <Box>
+                                    <Typography variant="subtitle2" fontWeight="600">
+                                      {cls.teacher_name}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                      Teacher
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                              </Box>
+                              
+                              <Button
+                                fullWidth
+                                variant="outlined"
+                                sx={{
+                                  mt: 'auto',
+                                  borderRadius: 1,
+                                  textTransform: 'none',
+                                  borderColor: 'rgba(0, 0, 0, 0.12)',
+                                  color: 'text.primary',
+                                  '&:hover': {
+                                    borderColor: getGroupColor(teachingGroup),
+                                    color: getGroupColor(teachingGroup),
+                                    bgcolor: 'transparent'
+                                  }
+                                }}
+                              >
+                                View Class Details
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+
+                {/* Standard Level Subjects */}
+                {groupedClasses[teachingGroup].SL.length > 0 && (
+                  <Box mb={5}>
+                    <Typography variant="h6" fontWeight="600" mb={2} color="text.secondary">
+                      Standard Level
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, width: '100%' }}>
+                      {groupedClasses[teachingGroup].SL.map((cls) => (
+                        <Box 
+                          key={cls.code}
+                          sx={{ 
+                            flex: '1 1 calc(33.333% - 16px)',
+                            minWidth: 'calc(33.333% - 16px)', 
+                            maxWidth: 'calc(33.333% - 16px)'
+                          }}
+                        >
+                          <Card 
+                            elevation={0}
+                            sx={{
+                              height: '100%',
+                              width: '100%',
+                              borderRadius: 2,
+                              border: '1px solid',
+                              borderColor: 'rgba(0, 0, 0, 0.08)',
+                              transition: 'all 0.2s ease-in-out',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              '&:hover': {
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                                borderColor: getGroupColor(teachingGroup)
+                              }
+                            }}
+                          >
+                            <CardContent sx={{ p: 3, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                              <Box>
+                                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                                  <Chip 
+                                    label={cls.code} 
+                                    size="small" 
+                                    sx={{ 
+                                      borderRadius: 1,
+                                      backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                      fontWeight: 500
+                                    }} 
+                                  />
+                                  <Chip 
+                                    label={cls.teaching_group} 
+                                    size="small"
+                                    sx={{ 
+                                      borderRadius: 1,
+                                      bgcolor: `${getGroupColor(teachingGroup)}20`,
+                                      color: getGroupColor(teachingGroup),
+                                      fontWeight: 500
+                                    }} 
+                                  />
+                                </Box>
+                                
+                                <Typography variant="h6" fontWeight="600" mb={2}>
+                                  {cls.subject}
+                                </Typography>
+                                
+                                <Divider sx={{ my: 2 }} />
+                                
+                                <Box 
+                                  sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    mb: 2
+                                  }}
+                                >
+                                  {getTeacherAvatar(cls.teacher_id, cls.teacher_name, cls.initials)}
+                                  <Box>
+                                    <Typography variant="subtitle2" fontWeight="600">
+                                      {cls.teacher_name}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                      Teacher
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                              </Box>
+                              
+                              <Button
+                                fullWidth
+                                variant="outlined"
+                                sx={{
+                                  mt: 'auto',
+                                  borderRadius: 1,
+                                  textTransform: 'none',
+                                  borderColor: 'rgba(0, 0, 0, 0.12)',
+                                  color: 'text.primary',
+                                  '&:hover': {
+                                    borderColor: getGroupColor(teachingGroup),
+                                    color: getGroupColor(teachingGroup),
+                                    bgcolor: 'transparent'
+                                  }
+                                }}
+                              >
+                                View Class Details
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+
+                {/* Other Subjects */}
+                {groupedClasses[teachingGroup].Subjects.length > 0 && (
+                  <Box mb={4}>
+                    <Typography variant="h6" fontWeight="600" mb={2} color="text.secondary">
+                      Other Subjects
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, width: '100%' }}>
+                      {groupedClasses[teachingGroup].Subjects.map((cls) => (
+                        <Box 
+                          key={cls.code}
+                          sx={{ 
+                            flex: '1 1 calc(33.333% - 16px)',
+                            minWidth: 'calc(33.333% - 16px)', 
+                            maxWidth: 'calc(33.333% - 16px)'
+                          }}
+                        >
+                          <Card 
+                            elevation={0}
+                            sx={{
+                              height: '100%',
+                              width: '100%',
+                              borderRadius: 2,
+                              border: '1px solid',
+                              borderColor: 'rgba(0, 0, 0, 0.08)',
+                              transition: 'all 0.2s ease-in-out',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              '&:hover': {
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                                borderColor: getGroupColor(teachingGroup)
+                              }
+                            }}
+                          >
+                            <CardContent sx={{ p: 3, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                              <Box>
+                                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                                  <Chip 
+                                    label={cls.code} 
+                                    size="small" 
+                                    sx={{ 
+                                      borderRadius: 1,
+                                      backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                      fontWeight: 500
+                                    }} 
+                                  />
+                                  <Chip 
+                                    label={cls.teaching_group} 
+                                    size="small"
+                                    sx={{ 
+                                      borderRadius: 1,
+                                      bgcolor: `${getGroupColor(teachingGroup)}20`,
+                                      color: getGroupColor(teachingGroup),
+                                      fontWeight: 500
+                                    }} 
+                                  />
+                                </Box>
+                                
+                                <Typography variant="h6" fontWeight="600" mb={2}>
+                                  {cls.subject}
+                                </Typography>
+                                
+                                <Divider sx={{ my: 2 }} />
+                                
+                                <Box 
+                                  sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    mb: 2
+                                  }}
+                                >
+                                  {getTeacherAvatar(cls.teacher_id, cls.teacher_name, cls.initials)}
+                                  <Box>
+                                    <Typography variant="subtitle2" fontWeight="600">
+                                      {cls.teacher_name}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                      Teacher
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                              </Box>
+                              
+                              <Button
+                                fullWidth
+                                variant="outlined"
+                                sx={{
+                                  mt: 'auto',
+                                  borderRadius: 1,
+                                  textTransform: 'none',
+                                  borderColor: 'rgba(0, 0, 0, 0.12)',
+                                  color: 'text.primary',
+                                  '&:hover': {
+                                    borderColor: getGroupColor(teachingGroup),
+                                    color: getGroupColor(teachingGroup),
+                                    bgcolor: 'transparent'
+                                  }
+                                }}
+                              >
+                                View Class Details
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+            ))}
+        </>
+      )}
     </Box>
   );
 };

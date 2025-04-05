@@ -274,7 +274,7 @@ const ChatPopup = ({ onClose, onMinimize, cachedMessages = null, isExpanded, onT
       
       // Use a hardcoded API key temporarily - replace with your actual key 
       // This should be moved to environment variables when possible
-      const apiKey = "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";
+      const apiKey = "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";
       
       const requestData = {
         model: "anthropic/claude-3-haiku",

@@ -19,7 +19,8 @@ import {
   Network,
   BrainCircuit,
   Sun,
-  Moon
+  Moon,
+  FileText
 } from 'lucide-react';
 import EventsView from './components/Events';
 import EventDetailView from './components/EventDetailView';
@@ -38,6 +39,7 @@ import Support from './components/Support';
 import AIAssistant from './components/AIAssistant';
 import StaffDashboard from './components/StaffDashboard';
 import StudentDashboard from './components/StudentDashboard';
+import NoteCraftPlus from './components/NoteCraftPlus';
 import { API_URL } from './config';
 
 // Version log
@@ -109,7 +111,7 @@ const ThemeProvider = ({ children }) => {
   );
 };
 
-const Sidebar = ({ userRole, onCollapsedChange }) => {
+const Sidebar = ({ userRole, onCollapsedChange, isMobile, isOpen, toggleSidebar }) => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -186,6 +188,14 @@ const Sidebar = ({ userRole, onCollapsedChange }) => {
     navigate(`/${userRole}/profile`);
   };
 
+  const handleNavigation = (path) => {
+    navigate(path);
+    // Close sidebar on mobile when an item is clicked
+    if (isMobile && isOpen) {
+      toggleSidebar();
+    }
+  };
+
   // Check if an item should be active
   const isActive = (item) => {
     if (item.isActive) {
@@ -195,10 +205,12 @@ const Sidebar = ({ userRole, onCollapsedChange }) => {
   };
 
   return (
-    <div className="fixed top-0 left-0 h-screen p-4 z-10">
+    <div className={`fixed top-0 left-0 h-screen p-4 z-40 transform transition-transform duration-300 ease-in-out ${
+      isMobile ? (isOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'
+    }`}>
       <div
-        className={`flex flex-col bg-white text-gray-800 transition-all duration-300 ease-in-out h-full shadow-lg rounded-r-xl ${
-          collapsed ? 'w-20' : 'w-72'
+        className={`flex flex-col bg-white text-gray-800 transition-all duration-300 ease-in-out h-full shadow-lg rounded-xl ${
+          isMobile ? 'w-72' : (collapsed ? 'w-20' : 'w-72')
         }`}
       >
         {/* Logo and Title - Fixed Height */}
@@ -222,7 +234,7 @@ const Sidebar = ({ userRole, onCollapsedChange }) => {
               )}
             </div>
             <div className={`flex flex-col justify-center transition-all duration-300 overflow-hidden ${
-              collapsed ? 'w-0 opacity-0' : 'opacity-100'
+              !isMobile && collapsed ? 'w-0 opacity-0' : 'opacity-100'
             }`}>
               <span className="font-medium whitespace-nowrap">
                 {userName}
@@ -239,7 +251,7 @@ const Sidebar = ({ userRole, onCollapsedChange }) => {
           {navItems.map((item) => (
             <div
               key={item.title}
-              onClick={() => navigate(item.path)}
+              onClick={() => handleNavigation(item.path)}
               className={`flex h-14 mb-2 cursor-pointer transition-colors rounded-lg mx-2 ${
                 isActive(item)
                   ? 'bg-black text-white'
@@ -250,7 +262,7 @@ const Sidebar = ({ userRole, onCollapsedChange }) => {
                 {item.icon}
               </div>
               <div className={`flex items-center transition-all duration-300 overflow-hidden ${
-                collapsed ? 'w-0 opacity-0' : 'opacity-100'
+                !isMobile && collapsed ? 'w-0 opacity-0' : 'opacity-100'
               }`}>
                 <span className="font-medium whitespace-nowrap">
                   {item.title}
@@ -265,13 +277,13 @@ const Sidebar = ({ userRole, onCollapsedChange }) => {
           {/* AI Assistant Button */}
           <div
             className="flex h-14 mb-2 cursor-pointer transition-colors rounded-lg mx-2 text-gray-500 hover:text-black hover:bg-gray-100"
-            onClick={() => navigate(`/${userRole}/ai-assistant`)}
+            onClick={() => handleNavigation(`/${userRole}/ai-assistant`)}
           >
             <div className="flex items-center justify-center w-16 h-full flex-shrink-0">
               <BrainCircuit size={20} />
             </div>
             <div className={`flex items-center transition-all duration-300 overflow-hidden ${
-              collapsed ? 'w-0 opacity-0' : 'opacity-100'
+              !isMobile && collapsed ? 'w-0 opacity-0' : 'opacity-100'
             }`}>
               <span className="font-medium whitespace-nowrap">
                 AI Assistant
@@ -279,16 +291,33 @@ const Sidebar = ({ userRole, onCollapsedChange }) => {
             </div>
           </div>
           
+          {/* NoteCraft+ Button */}
+          <div
+            className="flex h-14 mb-2 cursor-pointer transition-colors rounded-lg mx-2 text-gray-500 hover:text-black hover:bg-gray-100"
+            onClick={() => handleNavigation(`/${userRole}/notecraft-plus`)}
+          >
+            <div className="flex items-center justify-center w-16 h-full flex-shrink-0">
+              <FileText size={20} />
+            </div>
+            <div className={`flex items-center transition-all duration-300 overflow-hidden ${
+              !isMobile && collapsed ? 'w-0 opacity-0' : 'opacity-100'
+            }`}>
+              <span className="font-medium whitespace-nowrap">
+                NoteCraft+
+              </span>
+            </div>
+          </div>
+          
           {/* Alumni Network Button */}
           <div
             className="flex h-14 mb-2 cursor-pointer transition-colors rounded-lg mx-2 text-gray-500 hover:text-black hover:bg-gray-100"
-            onClick={() => navigate(`/${userRole}/alumni`)}
+            onClick={() => handleNavigation(`/${userRole}/alumni`)}
           >
             <div className="flex items-center justify-center w-16 h-full flex-shrink-0">
               <Network size={20} />
             </div>
             <div className={`flex items-center transition-all duration-300 overflow-hidden ${
-              collapsed ? 'w-0 opacity-0' : 'opacity-100'
+              !isMobile && collapsed ? 'w-0 opacity-0' : 'opacity-100'
             }`}>
               <span className="font-medium whitespace-nowrap">
                 Alumni Network
@@ -299,13 +328,13 @@ const Sidebar = ({ userRole, onCollapsedChange }) => {
           {/* Support Button */}
           <div
             className="flex h-14 mb-2 cursor-pointer transition-colors rounded-lg mx-2 text-gray-500 hover:text-black hover:bg-gray-100"
-            onClick={() => navigate(`/${userRole}/support`)}
+            onClick={() => handleNavigation(`/${userRole}/support`)}
           >
             <div className="flex items-center justify-center w-16 h-full flex-shrink-0">
               <HelpCircle size={20} />
             </div>
             <div className={`flex items-center transition-all duration-300 overflow-hidden ${
-              collapsed ? 'w-0 opacity-0' : 'opacity-100'
+              !isMobile && collapsed ? 'w-0 opacity-0' : 'opacity-100'
             }`}>
               <span className="font-medium whitespace-nowrap">
                 Support
@@ -316,13 +345,13 @@ const Sidebar = ({ userRole, onCollapsedChange }) => {
           {/* Version Log Button */}
           <div
             className="flex h-14 mb-2 cursor-pointer transition-colors rounded-lg mx-2 text-gray-500 hover:text-black hover:bg-gray-100"
-            onClick={() => navigate(`/${userRole}/about`)}
+            onClick={() => handleNavigation(`/${userRole}/about`)}
           >
             <div className="flex items-center justify-center w-16 h-full flex-shrink-0">
               <Info size={20} />
             </div>
             <div className={`flex items-center transition-all duration-300 overflow-hidden ${
-              collapsed ? 'w-0 opacity-0' : 'opacity-100'
+              !isMobile && collapsed ? 'w-0 opacity-0' : 'opacity-100'
             }`}>
               <span className="font-medium whitespace-nowrap">
                 About Project
@@ -330,22 +359,24 @@ const Sidebar = ({ userRole, onCollapsedChange }) => {
             </div>
           </div>
 
-          {/* Collapse Button */}
-          <div
-            className="flex h-14 mb-2 cursor-pointer transition-colors rounded-lg mx-2 text-gray-500 hover:text-black hover:bg-gray-100"
-            onClick={handleCollapse}
-          >
-            <div className="flex items-center justify-center w-16 h-full flex-shrink-0">
-              {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          {/* Collapse Button - Only shown on desktop */}
+          {!isMobile && (
+            <div
+              className="flex h-14 mb-2 cursor-pointer transition-colors rounded-lg mx-2 text-gray-500 hover:text-black hover:bg-gray-100"
+              onClick={handleCollapse}
+            >
+              <div className="flex items-center justify-center w-16 h-full flex-shrink-0">
+                {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+              </div>
+              <div className={`flex items-center transition-all duration-300 overflow-hidden ${
+                collapsed ? 'w-0 opacity-0' : 'opacity-100'
+              }`}>
+                <span className="font-medium whitespace-nowrap">
+                  Collapse
+                </span>
+              </div>
             </div>
-            <div className={`flex items-center transition-all duration-300 overflow-hidden ${
-              collapsed ? 'w-0 opacity-0' : 'opacity-100'
-            }`}>
-              <span className="font-medium whitespace-nowrap">
-                Collapse
-              </span>
-            </div>
-          </div>
+          )}
 
           {/* Logout Button */}
           <div
@@ -356,7 +387,7 @@ const Sidebar = ({ userRole, onCollapsedChange }) => {
               <LogOut size={20} />
             </div>
             <div className={`flex items-center transition-all duration-300 overflow-hidden ${
-              collapsed ? 'w-0 opacity-0' : 'opacity-100'
+              !isMobile && collapsed ? 'w-0 opacity-0' : 'opacity-100'
             }`}>
               <span className="font-medium whitespace-nowrap">
                 Logout
@@ -372,16 +403,69 @@ const Sidebar = ({ userRole, onCollapsedChange }) => {
 // Layout Component that combines Sidebar with content
 const DashboardLayout = ({ children, userRole }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  // Check if screen size is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Set initial value
+    checkMobile();
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', checkMobile);
+    
+    // Remove event listener on cleanup
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  // Handle sidebar toggle for mobile
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
   
   return (
     <div className="flex min-h-screen">
+      {/* Sidebar */}
       <Sidebar 
         userRole={userRole} 
         onCollapsedChange={(collapsed) => setSidebarCollapsed(collapsed)}
+        isMobile={isMobile}
+        isOpen={sidebarOpen}
+        toggleSidebar={toggleSidebar}
       />
+      
+      {/* Mobile hamburger menu */}
+      {isMobile && (
+        <button 
+          onClick={toggleSidebar}
+          className="fixed top-4 left-4 z-20 p-2 bg-white rounded-md shadow-md"
+        >
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            width="24" 
+            height="24" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          >
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      )}
+      
+      {/* Main content */}
       <div 
         className={`flex-1 transition-all duration-300 bg-white ${
-          sidebarCollapsed ? 'ml-28' : 'ml-80'
+          isMobile ? 'ml-0' : (sidebarCollapsed ? 'ml-28' : 'ml-80')
         }`}
       >
         {children}
@@ -583,6 +667,7 @@ function App() {
             </ProtectedRoute>
           } />
           <Route path="/staff/ai-assistant" element={<ProtectedRoute allowedRole="staff"><AIAssistant /></ProtectedRoute>} />
+          <Route path="/staff/notecraft-plus" element={<ProtectedRoute allowedRole="staff"><NoteCraftPlus /></ProtectedRoute>} />
           
           {/* Student Routes */}
           <Route path="/student/dashboard" element={<ProtectedRoute allowedRole="student"><StudentDashboard /></ProtectedRoute>} />
@@ -602,6 +687,7 @@ function App() {
             </ProtectedRoute>
           } />
           <Route path="/student/ai-assistant" element={<ProtectedRoute allowedRole="student"><AIAssistant /></ProtectedRoute>} />
+          <Route path="/student/notecraft-plus" element={<ProtectedRoute allowedRole="student"><NoteCraftPlus /></ProtectedRoute>} />
           
           {/* PrefetchAlumni Component */}
           <Route path="*" element={<PrefetchAlumni />} /> 

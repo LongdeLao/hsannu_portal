@@ -37,8 +37,6 @@ import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
-  Grid,
-  Paper,
   CircularProgress,
   Alert,
   alpha,
@@ -46,21 +44,208 @@ import {
   CardContent,
   Divider,
   Chip,
+  useTheme,
+  Button,
 } from "@mui/material";
 import {
   CheckCircle,
   AccessTime,
   LocalHospital,
   Cancel,
-  CalendarToday,
+  Timeline,
+  Event,
 } from "@mui/icons-material";
-import { XCircle, Clock } from 'lucide-react';
 import { API_URL } from '../config';
+import { BarChart } from './ui/bar-chart';
+
+// AttendanceChart component
+const AttendanceChart = ({ studentId }) => {
+  const [attendanceHistory, setAttendanceHistory] = useState([]);
+  const [chartData, setChartData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchAttendanceHistory = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${API_URL}/api/attendance/history/${studentId}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data || !data.success) {
+          throw new Error(data.message || 'Failed to fetch attendance history');
+        }
+        
+        setAttendanceHistory(data.records || []);
+        processChartData(data.records || []);
+      } catch (error) {
+        console.error('Error fetching attendance history:', error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (studentId) {
+      fetchAttendanceHistory();
+    }
+  }, [studentId]);
+
+  // Process the attendance data for the chart
+  const processChartData = (records) => {
+    if (!records || records.length === 0) {
+      setChartData(null);
+      return;
+    }
+
+    // Group records by month
+    const monthlyData = {};
+    const statusCounts = {
+      'present': 0,
+      'late': 0,
+      'absent': 0,
+      'medical': 0,
+      'early': 0
+    };
+
+    records.forEach(record => {
+      const date = new Date(record.attendance_date);
+      const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      
+      if (!monthlyData[monthYear]) {
+        monthlyData[monthYear] = { ...statusCounts };
+      }
+      
+      // Lowercase the status to ensure consistent keys
+      const status = record.status.toLowerCase();
+      if (statusCounts.hasOwnProperty(status)) {
+        monthlyData[monthYear][status]++;
+      }
+    });
+
+    // Convert to chart format
+    const months = Object.keys(monthlyData).sort();
+    const chartData = {
+      labels: months.map(month => {
+        const [year, monthNum] = month.split('-');
+        return new Date(parseInt(year), parseInt(monthNum) - 1).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+      }),
+      datasets: [
+        {
+          label: 'Present',
+          data: months.map(month => monthlyData[month].present),
+          backgroundColor: '#96C896'
+        },
+        {
+          label: 'Late',
+          data: months.map(month => monthlyData[month].late),
+          backgroundColor: '#FFC078'
+        },
+        {
+          label: 'Early',
+          data: months.map(month => monthlyData[month].early),
+          backgroundColor: '#82C3F5'
+        },
+        {
+          label: 'Medical',
+          data: months.map(month => monthlyData[month].medical),
+          backgroundColor: '#B482BE'
+        },
+        {
+          label: 'Absent',
+          data: months.map(month => monthlyData[month].absent),
+          backgroundColor: '#F58282'
+        }
+      ]
+    };
+
+    setChartData(chartData);
+  };
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" p={4}>
+        <CircularProgress size={30} thickness={3} sx={{ color: 'black' }} />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+        {error}
+      </Alert>
+    );
+  }
+
+  if (!chartData) {
+    return (
+      <Box 
+        sx={{
+          p: 4,
+          textAlign: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.02)',
+          borderRadius: 2,
+        }}
+      >
+        <Typography variant="body2" color="text.secondary">
+          No attendance history available
+        </Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Card 
+      elevation={0}
+      sx={{
+        borderRadius: 4,
+        mb: 4,
+        bgcolor: 'white',
+        color: 'black',
+        overflow: 'hidden',
+        position: 'relative',
+        border: '1px solid rgba(0,0,0,0.06)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+      }}
+    >
+      <CardContent sx={{ p: 3 }}>
+        <Typography variant="h6" fontWeight="600" mb={3}>
+          Monthly Attendance History
+        </Typography>
+        
+        <Box sx={{ height: 300, width: '100%' }}>
+          <BarChart 
+            data={chartData} 
+            options={{
+              responsive: true,
+              scales: {
+                x: {
+                  stacked: true,
+                },
+                y: {
+                  stacked: true,
+                  beginAtZero: true,
+                }
+              }
+            }} 
+          />
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
 
 const StudentAttendance = () => {
   const [attendance, setAttendance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const theme = useTheme();
 
   /**
    * Fetches attendance data for the current student from the server.
@@ -102,27 +287,29 @@ const StudentAttendance = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" py={8}>
-        <CircularProgress />
+      <Box display="flex" justifyContent="center" alignItems="center" flexDirection="column" py={12} gap={3}>
+        <CircularProgress size={42} thickness={3} sx={{ color: 'black' }} />
+        <Typography variant="body2" color="text.secondary">
+          Loading your attendance data...
+        </Typography>
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Box 
+      <Alert 
+        severity="error" 
+        variant="filled"
         sx={{
           p: 2,
           mb: 3,
           borderRadius: 2,
-          backgroundColor: alpha('#f44336', 0.1),
-          color: '#d32f2f',
-          border: '1px solid',
-          borderColor: alpha('#f44336', 0.2),
+          backgroundColor: 'rgba(211, 47, 47, 0.95)',
         }}
       >
         <Typography>{error}</Typography>
-      </Box>
+      </Alert>
     );
   }
 
@@ -130,14 +317,18 @@ const StudentAttendance = () => {
     return (
       <Box 
         sx={{
-          p: 4,
+          p: 8,
           textAlign: 'center',
           backgroundColor: 'rgba(0, 0, 0, 0.02)',
           borderRadius: 2,
         }}
       >
-        <Typography variant="body1" color="text.secondary">
-          No attendance records found.
+        <Event sx={{ fontSize: 48, color: 'rgba(0, 0, 0, 0.2)', mb: 2 }} />
+        <Typography variant="h6" color="text.secondary" fontWeight="500">
+          No attendance records found
+        </Typography>
+        <Typography variant="body2" color="text.secondary" mt={1}>
+          Check back later or contact your administrator
         </Typography>
       </Box>
     );
@@ -150,18 +341,8 @@ const StudentAttendance = () => {
    * @returns {string} The color code in hex format
    */
   const getStatusColor = (status) => {
-    switch (status.toLowerCase()) {
-      case "present":
-        return "#4CAF50";
-      case "late":
-        return "#FF9800";
-      case "medical":
-        return "#9C27B0";
-      case "absent":
-        return "#F44336";
-      default:
-        return "#757575";
-    }
+    // Using black for all status types
+    return "#000000";
   };
 
   /**
@@ -185,223 +366,323 @@ const StudentAttendance = () => {
     }
   };
 
-  return (
-    <Box p={3}>
-      <Typography variant="h4" component="h1" fontWeight="bold" fontSize="1.5rem" mb={4}>
-        Attendance Overview
-      </Typography>
+  // Calculate percentage for progress bar
+  const attendancePercentage = parseFloat(attendance.stats.percentage.replace('%', ''));
 
-      {/* Today's Status Card */}
+  // Get attendance rating text
+  const getAttendanceRating = () => {
+    if (attendancePercentage >= 90) return 'Excellent';
+    if (attendancePercentage >= 75) return 'Good';
+    if (attendancePercentage >= 50) return 'Average';
+    return 'Needs improvement';
+  };
+
+  // Get color based on attendance percentage
+  const getPercentageColor = () => {
+    // Using black for all percentages
+    return "#000000";
+  };
+
+  return (
+    <Box px={3} py={4} sx={{ maxWidth: '1100px', mx: 'auto' }}>
+      <Box mb={4.5} display="flex" justifyContent="space-between" alignItems="center">
+        <Typography 
+          variant="h4" 
+          component="h1" 
+          fontWeight="700" 
+          fontSize={{ xs: '1.5rem', md: '1.75rem' }}
+        >
+          Attendance
+        </Typography>
+        
+        <Chip 
+          icon={<Timeline sx={{ fontSize: 16 }} />} 
+          label="Updated today" 
+          size="small" 
+          sx={{ 
+            borderRadius: '16px',
+            bgcolor: 'rgba(0, 0, 0, 0.05)',
+            color: 'rgba(0, 0, 0, 0.7)',
+            height: 28,
+            '.MuiChip-icon': {
+              color: 'black'
+            }
+          }} 
+        />
+      </Box>
+
+      {/* Main attendance status card - Simplified */}
       <Card 
         elevation={0}
         sx={{
+          borderRadius: 4,
           mb: 4,
-          borderRadius: 2,
-          border: '1px solid',
-          borderColor: 'rgba(0, 0, 0, 0.08)',
-          transition: 'all 0.2s ease-in-out',
-          '&:hover': {
-            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-          }
+          bgcolor: 'white',
+          color: 'black',
+          overflow: 'hidden',
+          position: 'relative',
+          border: '1px solid rgba(0,0,0,0.06)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
         }}
       >
-        <CardContent sx={{ p: 3 }}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h6" fontWeight="600">
-              Today's Status
+        <Box sx={{ p: { xs: 2.5, sm: 3, md: 4 }, position: 'relative', zIndex: 2 }}>
+          {/* Today's status section - align left and horizontal layout */}
+          <Box py={2}>
+            <Typography variant="overline" sx={{ color: 'text.secondary', letterSpacing: 1, mb: 2, display: 'block' }}>
+              TODAY'S STATUS
             </Typography>
-            <Box 
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                color: getStatusColor(attendance.today),
-                bgcolor: alpha(getStatusColor(attendance.today), 0.1),
-                px: 2,
-                py: 1,
-                borderRadius: 2,
-              }}
-            >
-              {getStatusIcon(attendance.today)}
-              <Typography variant="subtitle1" fontWeight="500">
+            
+            <Box display="flex" alignItems="center" mt={1}>
+              <Box 
+                sx={{
+                  mr: 3,
+                  width: 64,
+                  height: 64,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                  color: 'black',
+                }}
+              >
+                {getStatusIcon(attendance.today)}
+              </Box>
+              
+              <Typography variant="h3" fontWeight="700">
                 {attendance.today || "Pending"}
               </Typography>
             </Box>
           </Box>
-          <Divider sx={{ my: 2 }} />
-          <Box display="flex" alignItems="center" gap={1} color="text.secondary">
-            <CalendarToday fontSize="small" />
-            <Typography variant="body2">
-              {new Date().toLocaleDateString()}
-            </Typography>
-          </Box>
-        </CardContent>
+        </Box>
       </Card>
-
-      {/* Attendance Summary Cards Grid */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card 
-            elevation={0}
-            sx={{
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'rgba(0, 0, 0, 0.08)',
-              transition: 'all 0.2s ease-in-out',
-              '&:hover': {
-                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                borderColor: '#4CAF50'
-              }
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Box display="flex" alignItems="center" gap={1} mb={2}>
-                <CheckCircle sx={{ color: "#4CAF50" }} />
-                <Typography variant="subtitle1" fontWeight="500">Present</Typography>
+      
+      {/* Stats heading */}
+      <Typography variant="h6" fontWeight="600" mb={3}>
+        Attendance Breakdown
+      </Typography>
+      
+      {/* Attendance stats cards - full width cards */}
+      <Box
+        sx={{
+          display: 'flex',
+          width: '100%',
+          mb: 4,
+          gap: 2
+        }}
+      >
+        {/* Present card */}
+        <Card 
+          elevation={0}
+          sx={{
+            borderRadius: 3,
+            bgcolor: 'white',
+            border: '1px solid rgba(0,0,0,0.06)',
+            flexGrow: 1,
+            width: '25%',
+            transition: 'all 0.2s',
+            '&:hover': { 
+              boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+            }
+          }}
+        >
+          <CardContent sx={{ p: 3 }}>
+            {/* First row: Icon + Status */}
+            <Box display="flex" alignItems="center" mb={2}>
+              <Box 
+                sx={{
+                  borderRadius: '50%',
+                  height: 36,
+                  width: 36,
+                  mr: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: 'rgba(150, 200, 150, 0.2)',
+                  color: '#96C896',
+                }}
+              >
+                <CheckCircle fontSize="small" />
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: "bold", mb: 0.5 }}>
+              <Typography variant="subtitle1" sx={{ color: '#96C896', fontWeight: '500' }}>
+                Present
+              </Typography>
+            </Box>
+            
+            {/* Second row: Number + Days side by side */}
+            <Box display="flex" alignItems="baseline">
+              <Typography variant="h3" sx={{ fontWeight: "800", color: 'black', mr: 1 }}>
                 {attendance.stats.present}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Days
               </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+            </Box>
+          </CardContent>
+        </Card>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Card 
-            elevation={0}
-            sx={{
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'rgba(0, 0, 0, 0.08)',
-              transition: 'all 0.2s ease-in-out',
-              '&:hover': {
-                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                borderColor: '#FF9800'
-              }
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Box display="flex" alignItems="center" gap={1} mb={2}>
-                <AccessTime sx={{ color: "#FF9800" }} />
-                <Typography variant="subtitle1" fontWeight="500">Late</Typography>
+        {/* Late card */}
+        <Card 
+          elevation={0}
+          sx={{
+            borderRadius: 3,
+            bgcolor: 'white',
+            border: '1px solid rgba(0,0,0,0.06)',
+            flexGrow: 1,
+            width: '25%',
+            transition: 'all 0.2s',
+            '&:hover': { 
+              boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+            }
+          }}
+        >
+          <CardContent sx={{ p: 3 }}>
+            {/* First row: Icon + Status */}
+            <Box display="flex" alignItems="center" mb={2}>
+              <Box 
+                sx={{
+                  borderRadius: '50%',
+                  height: 36,
+                  width: 36,
+                  mr: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: 'rgba(255, 192, 120, 0.2)',
+                  color: '#FFC078',
+                }}
+              >
+                <AccessTime fontSize="small" />
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: "bold", mb: 0.5 }}>
+              <Typography variant="subtitle1" sx={{ color: '#FFC078', fontWeight: '500' }}>
+                Late
+              </Typography>
+            </Box>
+            
+            {/* Second row: Number + Days side by side */}
+            <Box display="flex" alignItems="baseline">
+              <Typography variant="h3" sx={{ fontWeight: "800", color: 'black', mr: 1 }}>
                 {attendance.stats.late}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Days
               </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+            </Box>
+          </CardContent>
+        </Card>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Card 
-            elevation={0}
-            sx={{
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'rgba(0, 0, 0, 0.08)',
-              transition: 'all 0.2s ease-in-out',
-              '&:hover': {
-                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                borderColor: '#9C27B0'
-              }
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Box display="flex" alignItems="center" gap={1} mb={2}>
-                <LocalHospital sx={{ color: "#9C27B0" }} />
-                <Typography variant="subtitle1" fontWeight="500">Medical</Typography>
+        {/* Medical card */}
+        <Card 
+          elevation={0}
+          sx={{
+            borderRadius: 3,
+            bgcolor: 'white',
+            border: '1px solid rgba(0,0,0,0.06)',
+            flexGrow: 1,
+            width: '25%',
+            transition: 'all 0.2s',
+            '&:hover': { 
+              boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+            }
+          }}
+        >
+          <CardContent sx={{ p: 3 }}>
+            {/* First row: Icon + Status */}
+            <Box display="flex" alignItems="center" mb={2}>
+              <Box 
+                sx={{
+                  borderRadius: '50%',
+                  height: 36,
+                  width: 36,
+                  mr: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: 'rgba(180, 130, 190, 0.2)',
+                  color: '#B482BE',
+                }}
+              >
+                <LocalHospital fontSize="small" />
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: "bold", mb: 0.5 }}>
+              <Typography variant="subtitle1" sx={{ color: '#B482BE', fontWeight: '500' }}>
+                Medical
+              </Typography>
+            </Box>
+            
+            {/* Second row: Number + Days side by side */}
+            <Box display="flex" alignItems="baseline">
+              <Typography variant="h3" sx={{ fontWeight: "800", color: 'black', mr: 1 }}>
                 {attendance.stats.medical}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Days
               </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+            </Box>
+          </CardContent>
+        </Card>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Card 
-            elevation={0}
-            sx={{
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'rgba(0, 0, 0, 0.08)',
-              transition: 'all 0.2s ease-in-out',
-              '&:hover': {
-                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                borderColor: '#F44336'
-              }
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Box display="flex" alignItems="center" gap={1} mb={2}>
-                <Cancel sx={{ color: "#F44336" }} />
-                <Typography variant="subtitle1" fontWeight="500">Absent</Typography>
+        {/* Absent card */}
+        <Card 
+          elevation={0}
+          sx={{
+            borderRadius: 3,
+            bgcolor: 'white',
+            border: '1px solid rgba(0,0,0,0.06)',
+            flexGrow: 1,
+            width: '25%',
+            transition: 'all 0.2s',
+            '&:hover': { 
+              boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+            }
+          }}
+        >
+          <CardContent sx={{ p: 3 }}>
+            {/* First row: Icon + Status */}
+            <Box display="flex" alignItems="center" mb={2}>
+              <Box 
+                sx={{
+                  borderRadius: '50%',
+                  height: 36,
+                  width: 36,
+                  mr: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: 'rgba(245, 130, 130, 0.2)',
+                  color: '#F58282',
+                }}
+              >
+                <Cancel fontSize="small" />
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: "bold", mb: 0.5 }}>
+              <Typography variant="subtitle1" sx={{ color: '#F58282', fontWeight: '500' }}>
+                Absent
+              </Typography>
+            </Box>
+            
+            {/* Second row: Number + Days side by side */}
+            <Box display="flex" alignItems="baseline">
+              <Typography variant="h3" sx={{ fontWeight: "800", color: 'black', mr: 1 }}>
                 {attendance.stats.absent}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Days
               </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
 
-      {/* Overall Attendance Percentage */}
-      <Card 
-        elevation={0}
-        sx={{
-          mt: 4,
-          borderRadius: 2,
-          border: '1px solid',
-          borderColor: 'rgba(0, 0, 0, 0.08)',
-          transition: 'all 0.2s ease-in-out',
-          '&:hover': {
-            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-          }
-        }}
-      >
-        <CardContent sx={{ p: 3 }}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h6" fontWeight="600">
-              Overall Attendance
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Based on {attendance.stats.total} total days
-            </Typography>
-          </Box>
-          <Divider sx={{ my: 2 }} />
-          <Box 
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2,
-              color: '#4CAF50',
-              bgcolor: alpha('#4CAF50', 0.1),
-              px: 3,
-              py: 2,
-              borderRadius: 2,
-            }}
-          >
-            <Typography variant="h3" sx={{ fontWeight: "bold" }}>
-              {attendance.stats.percentage}
-            </Typography>
-            <Typography variant="subtitle1" fontWeight="500">
-              Attendance Rate
-            </Typography>
-          </Box>
-        </CardContent>
-      </Card>
+      {/* Attendance Chart Section */}
+      {attendance && attendance.user_id && (
+        <AttendanceChart studentId={attendance.user_id} />
+      )}
+
+      {/* Bottom note */}
+      <Box mt={4} textAlign="center">
+        <Typography variant="body2" color="text.secondary">
+          These records are updated daily at midnight. For any discrepancies, please contact the administrator.
+        </Typography>
+      </Box>
     </Box>
   );
 };
